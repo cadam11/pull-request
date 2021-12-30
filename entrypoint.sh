@@ -89,10 +89,39 @@ PR_URL=$(sh -c "$COMMAND")
 if [[ "$?" != "0" ]]; then
   exit 1
 fi
+PR_NUM=${PR_URL##*/}
+GH_REPO=${GITHUB_REPOSITORY##*/}
+GH_OWNER=${GITHUB_REPOSITORY%%/*}
+
+if [[ "$INPUT_PR_AUTO_MERGE" ==  "true" ]]; then
+  RES=$(hub api graphql \
+    -F pullRequestNumber=${PR_NUM} \
+    -f owner="${GH_OWNER}" \
+    -f repo="${GH_REPO}" \
+    -f query='
+      query($owner: String!, $repo: String!, $pullRequestNumber: Int!) {
+        repository(owner: $owner, name: $repo) {
+          pullRequest(number: $pullRequestNumber) {
+            id
+          }
+        }
+      }')
+
+  PR_ID=$(echo "$RES" | jq -r .data.repository.pullRequest.id)
+
+  hub api graphql \
+    -f pullRequestId="${PR_ID}" \
+    -f query='
+      mutation($pullRequestId: ID!) {
+        enablePullRequestAutoMerge(input: { pullRequestId: $pullRequestId }) {
+          clientMutationId
+        }
+      }'
+fi
 
 echo ${PR_URL}
 echo "::set-output name=pr_url::${PR_URL}"
-echo "::set-output name=pr_number::${PR_URL##*/}"
+echo "::set-output name=pr_number::${PR_NUM}"
 if [[ "$LINES_CHANGED" = "0" ]]; then
   echo "::set-output name=has_changed_files::false"
 else

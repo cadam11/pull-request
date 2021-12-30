@@ -66,6 +66,8 @@ jobs:
         pr_milestone: "Milestone 1"                       # Milestone name
         pr_draft: true                                    # Creates pull request as draft
         pr_allow_empty: true                              # Creates pull request even if there are no changes
+        pr_auto_merge: true                               # Enable the default auto-merge on the pull request
+
         github_token: ${{ secrets.GITHUB_TOKEN }}
 ```
 

@@ -39,6 +39,9 @@ inputs:
   pr_allow_empty:
     description: Create PR even if no changes
     required: false
+  pr_auto_merge:
+    description: Enable the default auto-merge on the pull request
+    required: false
   github_token:
     description: GitHub token secret
     required: true
